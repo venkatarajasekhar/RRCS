@@ -131,11 +131,11 @@ int send_file(JCR *jcr, char *path) {
         printf("send file %s (%d)\n",rp->filename,jcr->file_count);
     chunk_file(jcr,rp); 
     TIMER_START(start);
-    send_finger( jcr,rp);//send fingerprints
+    send_finger( jcr,rp);//send the fingerprints
     recv_finger_rsp(jcr, rp);
     TIMER_END(end);
     TIMER_DIFF(jcr->search_time,start,end);
-    send_data(jcr,rp); // send data
+    send_data(jcr,rp); // send the data
     return SUCCESS;
 
 }
@@ -237,13 +237,13 @@ void send_finger(JCR *jcr,Recipe *rp){
     FingerChunk * fc;
     char stream[30]={0};
     buf=(char *)malloc(SOCKET_BUF_SIZE);
-    snprintf(stream,30,"%d %d",rp->fileindex,FILE_NAME); // send the file name
+    snprintf(stream,30,"%d %d",rp->fileindex,FILE_NAME); 
     bnet_send(jcr->data_socket,stream,strlen(stream));
 
     bnet_send(jcr->data_socket,rp->filename,strlen(rp->filename));
     bnet_signal(jcr->data_socket,NAME_END);
     
-    snprintf(stream,30,"%d %d",rp->fileindex,FILE_FINGERPRINT);// send the fingerprint
+    snprintf(stream,30,"%d %d",rp->fileindex,FILE_FINGERPRINT);
     bnet_send(jcr->data_socket,stream,strlen(stream));
 
     p=buf;
@@ -293,7 +293,7 @@ void send_data(JCR *jcr,Recipe *rp){
      }
     lseek(fd,0,SEEK_SET);
     
-    snprintf(stream,30,"%d %d",rp->fileindex,FILE_DATA); // send the data
+    snprintf(stream,30,"%d %d",rp->fileindex,FILE_DATA); 
     bnet_send(jcr->data_socket,stream,strlen(stream));
     
     int total = 0;
@@ -316,7 +316,7 @@ void send_data(JCR *jcr,Recipe *rp){
         if(fc->existed=='0'){
             lseek(fd,len,SEEK_SET);
             memcpy(buf, fc->fingerprint, sizeof(Fingerprint));
-            memcpy(buf+sizeof(Fingerprint), flag_real, sizeof(int));
+            memcpy(buf+sizeof(Fingerprint), flag_real, sizeof(int));			// add the flag in the data packet
             
             TIMER_START(r_start);
             if(readn(fd,buf+sizeof(Fingerprint)+sizeof(int),fc->chunklen)!=fc->chunklen)
@@ -334,7 +334,7 @@ void send_data(JCR *jcr,Recipe *rp){
         else if(num_redundant > 0){
             lseek(fd,len,SEEK_SET);
             memcpy(buf, fc->fingerprint, sizeof(Fingerprint));
-            memcpy(buf+sizeof(Fingerprint), flag_redu, sizeof(int));
+            memcpy(buf+sizeof(Fingerprint), flag_redu, sizeof(int));			// add the flag in the data packet
             
             TIMER_START(r_start);
             if(readn(fd,buf+sizeof(Fingerprint)+sizeof(int),fc->chunklen)!=fc->chunklen)

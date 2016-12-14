@@ -69,7 +69,7 @@ void backup_dedup(int fd,char *msg){
         }
         jcr->nRecvSize+=len;
 
-        if(sscanf(buf,"%d %d",&index,&type)!=2) //index number, file type
+        if(sscanf(buf,"%d %d",&index,&type)!=2) 
             goto FAIL;    
         switch(type){
             case FILE_NAME:
@@ -97,12 +97,12 @@ void backup_dedup(int fd,char *msg){
                 TIMER_DIFF(jcr->searchTime,sstart,ssend);
                 break;
             case FILE_DATA:
-                while(bnet_recv(jcr->dataSocket,buf,&len)>0){ /*format: fingerprint-flag-data..*/
+                while(bnet_recv(jcr->dataSocket,buf,&len)>0){ 				//	format: fingerprint-flag-data..
                     jcr->nRecvSize+=len;
                     char* flag = malloc(sizeof(int));
                     memcpy(flag, buf+sizeof(Fingerprint), sizeof(int));
 
-                    if(strcmp(flag, flag_real) == 0){                   // check the flag of the non-duplicate/redundant chunk
+                    if(strcmp(flag, flag_real) == 0){                   	// check the flag of the non-duplicate/redundant chunk
                         chunk=chunk_new(buf,buf+sizeof(Fingerprint)+sizeof(int),len-sizeof(Fingerprint)-sizeof(int));
                         TIMER_START(wstart);
                         while(write_chunk(jcr->container, chunk)==false){
